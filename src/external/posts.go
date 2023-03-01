@@ -36,6 +36,9 @@ type Post struct {
 	// RevisionNumber int           `json:"revision_number"`
 	CreatedBy PostCreatedBy `json:"created_by"`
 	UpdatedBy PostUpdatedBy `json:"updated_by"`
+
+	// ***** self defined *****
+	IsActiveUserCreated bool `json:"-"`
 }
 
 type PostCreatedBy struct {
@@ -87,7 +90,7 @@ func (f *PostsFetcher) Do() []*ResponsePosts {
 }
 
 func (f *PostsFetcher) do() (*ResponsePosts, error) {
-	ep := buildEndpoint(postEndpointFmt, f.qp, f.qp.SortPosts)
+	ep := buildAPIEndpoint(postEndpointFmt, f.qp, f.qp.SortPosts)
 
 	res, err := http.Get(ep)
 	if err != nil {

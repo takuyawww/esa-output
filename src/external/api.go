@@ -19,7 +19,7 @@ type APIQueryParams struct {
 	Page        int
 }
 
-func buildEndpoint(
+func buildAPIEndpoint(
 	endpointFmt string,
 	qp *APIQueryParams,
 	sortBy string,

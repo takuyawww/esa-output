@@ -65,7 +65,7 @@ func (f *MembersFetcher) Do() []*ResponseMembers {
 }
 
 func (f *MembersFetcher) do() (*ResponseMembers, error) {
-	ep := buildEndpoint(memberEndpointFmt, f.qp, f.qp.SortMembers)
+	ep := buildAPIEndpoint(memberEndpointFmt, f.qp, f.qp.SortMembers)
 
 	res, err := http.Get(ep)
 	if err != nil {
