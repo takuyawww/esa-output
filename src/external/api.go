@@ -15,11 +15,20 @@ type QueryParams struct {
 	Sort        string
 	Order       string
 	PerPage     int
+	Page        int
 }
 
 func buildEndpoint(
 	endpointFmt string,
 	qp *QueryParams,
 ) string {
-	return fmt.Sprintf(endpointFmt, qp.Team, qp.AccessToken, qp.Sort, qp.Order, qp.PerPage)
+	return fmt.Sprintf(
+		endpointFmt,
+		qp.Team,
+		qp.AccessToken,
+		qp.Sort,
+		qp.Order,
+		qp.PerPage,
+		qp.Page,
+	)
 }

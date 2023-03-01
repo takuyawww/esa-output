@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/alecthomas/kingpin/v2"
@@ -10,8 +11,18 @@ import (
 func Exec() {
 	printInformation()
 
+	defer func() {
+		if x := recover(); x != nil {
+			errStr := fmt.Sprint(x)
+			printErr(errors.New(errStr))
+		}
+	}()
+
 	qp := parseFlag()
-	external.NewPostsFetcher(qp).Do()
+
+	posts := external.NewPostsFetcher(qp).Do()
+
+	fmt.Printf("%+v", posts)
 }
 
 func printInformation() {
@@ -20,6 +31,10 @@ func printInformation() {
 	fmt.Println("Operation is not guaranteed when the request limit is exceeded.")
 	fmt.Println("See https://docs.esa.io/posts/102")
 	fmt.Printf("**************************\n\n")
+}
+
+func printErr(err error) {
+	fmt.Printf("error occurred, reason: %s", err.Error())
 }
 
 func parseFlag() *external.QueryParams {
@@ -36,8 +51,9 @@ func parseFlag() *external.QueryParams {
 	return &external.QueryParams{
 		Team:        *t,
 		AccessToken: *at,
-		PerPage:     *pp,
 		Sort:        *s,
 		Order:       *o,
+		PerPage:     *pp,
+		Page:        1,
 	}
 }
