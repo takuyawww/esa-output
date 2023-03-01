@@ -9,10 +9,11 @@ const (
 	EsaAPIVersion = "v1"
 )
 
-type QueryParams struct {
+type APIQueryParams struct {
 	Team        string
 	AccessToken string
-	Sort        string
+	SortPosts   string
+	SortMembers string
 	Order       string
 	PerPage     int
 	Page        int
@@ -20,13 +21,14 @@ type QueryParams struct {
 
 func buildEndpoint(
 	endpointFmt string,
-	qp *QueryParams,
+	qp *APIQueryParams,
+	sortBy string,
 ) string {
 	return fmt.Sprintf(
 		endpointFmt,
 		qp.Team,
 		qp.AccessToken,
-		qp.Sort,
+		sortBy,
 		qp.Order,
 		qp.PerPage,
 		qp.Page,

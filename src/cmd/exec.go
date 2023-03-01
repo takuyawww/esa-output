@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/takuyawww/esa-csv/src/external"
@@ -13,6 +14,7 @@ func Exec() {
 
 	defer func() {
 		if x := recover(); x != nil {
+			debug.PrintStack()
 			errStr := fmt.Sprint(x)
 			printErr(errors.New(errStr))
 		}
@@ -21,8 +23,13 @@ func Exec() {
 	qp := parseFlag()
 
 	posts := external.NewPostsFetcher(qp).Do()
+	members := external.NewMembersFetcher(qp).Do()
 
-	fmt.Printf("%+v", posts)
+	fmt.Println("===========================================")
+	fmt.Printf("%+v", &posts)
+	fmt.Println("===========================================")
+	fmt.Printf("%+v", &members)
+	fmt.Println("===========================================")
 }
 
 func printInformation() {
@@ -37,21 +44,23 @@ func printErr(err error) {
 	fmt.Printf("error occurred, reason: %s", err.Error())
 }
 
-func parseFlag() *external.QueryParams {
+func parseFlag() *external.APIQueryParams {
 	var (
 		t  = kingpin.Flag("team", "your team name (*required*)").Required().String()
 		at = kingpin.Flag("access-token", "your esa personal access token (*required*)").Required().String()
 		pp = kingpin.Flag("per-page", "per page default 100 (in 20 ~ 100)").Default("100").Int()
-		s  = kingpin.Flag("sort", "sort at default number (sort by updated, created, number, stars, watches, comments, best_match)").Default("number").String()
+		sp = kingpin.Flag("sort-posts", "sort by posts default number (sort by updated, created, number, stars, watches, comments, best_match)").Default("number").String()
+		sm = kingpin.Flag("sort-members", "sort by members default joined (sort by posts_count, joined, last_accessed)").Default("number").String()
 		o  = kingpin.Flag("order", "order by default asc (order by desc or asc)").Default("asc").String()
 	)
 
 	kingpin.Parse()
 
-	return &external.QueryParams{
+	return &external.APIQueryParams{
 		Team:        *t,
 		AccessToken: *at,
-		Sort:        *s,
+		SortPosts:   *sp,
+		SortMembers: *sm,
 		Order:       *o,
 		PerPage:     *pp,
 		Page:        1,

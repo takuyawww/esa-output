@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	endpointFmt = EsaAPIOrigin +
+	postEndpointFmt = EsaAPIOrigin +
 		"/" +
 		EsaAPIVersion +
 		"/teams/%s/posts?access_token=%s&sort=%s&order=%s&per_page=%d&page=%d"
 )
 
 type PostsFetcher struct {
-	qp       *QueryParams
+	qp       *APIQueryParams
 	loopFlag *bool
 }
 
@@ -62,32 +62,32 @@ type ResponsePosts struct {
 	// MaxPerPage int    `json:"max_per_page"`
 }
 
-func NewPostsFetcher(qp *QueryParams) *PostsFetcher {
+func NewPostsFetcher(qp *APIQueryParams) *PostsFetcher {
 	newTrue := true
 	return &PostsFetcher{qp: qp, loopFlag: &newTrue}
 }
 
 func (f *PostsFetcher) Do() []*ResponsePosts {
-	rps := make([]*ResponsePosts, 0)
+	results := make([]*ResponsePosts, 0)
 
 	for *f.loopFlag {
-		rp, err := do(f.qp)
+		result, err := f.do()
 		if err != nil {
 			panic(err)
 		}
 
-		rps = append(rps, rp)
-		if rp.NextPage == 0 {
+		results = append(results, result)
+		if result.NextPage == 0 {
 			*f.loopFlag = false
 		}
-		f.qp.Page = rp.NextPage
+		f.qp.Page = result.NextPage
 	}
 
-	return rps
+	return results
 }
 
-func do(qp *QueryParams) (*ResponsePosts, error) {
-	ep := buildEndpoint(endpointFmt, qp)
+func (f *PostsFetcher) do() (*ResponsePosts, error) {
+	ep := buildEndpoint(postEndpointFmt, f.qp, f.qp.SortPosts)
 
 	res, err := http.Get(ep)
 	if err != nil {
@@ -100,11 +100,11 @@ func do(qp *QueryParams) (*ResponsePosts, error) {
 		return nil, err
 	}
 
-	rp := new(ResponsePosts)
+	result := new(ResponsePosts)
 
-	if err := json.Unmarshal(b, rp); err != nil {
+	if err := json.Unmarshal(b, result); err != nil {
 		return nil, err
 	}
 
-	return rp, nil
+	return result, nil
 }
