@@ -7,18 +7,17 @@ import (
 )
 
 const (
-	memberEndpointFmt = EsaAPIOrigin +
+	membersAPIEndpointFmt = EsaAPIOrigin +
 		"/" +
 		EsaAPIVersion +
 		"/teams/%s/members?access_token=%s&sort=%s&order=%s&per_page=%d&page=%d"
 )
 
-type MembersFetcher struct {
+type MembersAPIFetcher struct {
 	qp       *APIQueryParams
 	loopFlag *bool
 }
 
-// comment out unused responses to reduce memory usage
 type Member struct {
 	// Myself 				bool   `json:"myself"`
 	Name string `json:"name"`
@@ -28,6 +27,9 @@ type Member struct {
 	// PostsCount 		int    `json:"posts_count"`
 	// JoinedAt 			time.Time `json:"joined_at"`
 	// LastAccessedAt time.Time `json:"last_accessed_at"`
+
+	// ***** self defined *****
+	Active bool `json:"-"`
 }
 
 type ResponseMembers struct {
@@ -40,12 +42,12 @@ type ResponseMembers struct {
 	// MaxPerPage int    `json:"max_per_page"`
 }
 
-func NewMembersFetcher(qp *APIQueryParams) *MembersFetcher {
+func NewMembersAPIFetcher(qp *APIQueryParams) *MembersAPIFetcher {
 	newTrue := true
-	return &MembersFetcher{qp: qp, loopFlag: &newTrue}
+	return &MembersAPIFetcher{qp: qp, loopFlag: &newTrue}
 }
 
-func (f *MembersFetcher) Do() []*ResponseMembers {
+func (f *MembersAPIFetcher) Do() []*ResponseMembers {
 	results := make([]*ResponseMembers, 0)
 
 	for *f.loopFlag {
@@ -64,8 +66,8 @@ func (f *MembersFetcher) Do() []*ResponseMembers {
 	return results
 }
 
-func (f *MembersFetcher) do() (*ResponseMembers, error) {
-	ep := buildAPIEndpoint(memberEndpointFmt, f.qp, f.qp.SortMembers)
+func (f *MembersAPIFetcher) do() (*ResponseMembers, error) {
+	ep := buildAPIEndpoint(membersAPIEndpointFmt, f.qp, f.qp.SortMembers)
 
 	res, err := http.Get(ep)
 	if err != nil {

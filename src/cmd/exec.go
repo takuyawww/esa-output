@@ -3,15 +3,21 @@ package cmd
 import (
 	"errors"
 	"fmt"
+
 	// "runtime/debug"
 
 	"github.com/alecthomas/kingpin/v2"
-	"github.com/takuyawww/esa-csv/src/external"
-	"github.com/takuyawww/esa-csv/src/format/csv"
+	"github.com/takuyawww/esa-output/src/external"
+	"github.com/takuyawww/esa-output/src/format/csv"
 )
 
 func Exec() {
 	printInformation()
+
+	testStr := csv.New([]*external.ResponseMembers{}, []*external.ResponsePosts{}).String()
+
+	fmt.Println(testStr)
+	panic("test")
 
 	defer func() {
 		if x := recover(); x != nil {
@@ -23,10 +29,10 @@ func Exec() {
 
 	qp := parseFlag()
 
-	esaPosts := external.NewPostsFetcher(qp).Do()
-	esaMembers := external.NewMembersFetcher(qp).Do()
+	esaPosts := external.NewPostsAPIFetcher(qp).Do()
+	esaMembers := external.NewMembersAPIFetcher(qp).Do()
 
-	csv.NewEsaCsv(esaMembers, esaPosts).ToCsvString().OutputCsv()
+	csv.New(esaMembers, esaPosts).String().Output()
 }
 
 func printInformation() {

@@ -1,4 +1,4 @@
-module github.com/takuyawww/esa-csv
+module github.com/takuyawww/esa-output
 
 go 1.19
 

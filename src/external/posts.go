@@ -8,42 +8,38 @@ import (
 )
 
 const (
-	postEndpointFmt = EsaAPIOrigin +
+	postsAPIEndpointFmt = EsaAPIOrigin +
 		"/" +
 		EsaAPIVersion +
 		"/teams/%s/posts?access_token=%s&sort=%s&order=%s&per_page=%d&page=%d"
 )
 
-type PostsFetcher struct {
+type PostsAPIFetcher struct {
 	qp       *APIQueryParams
 	loopFlag *bool
 }
 
-// comment out unused responses to reduce memory usage
 type Post struct {
-	Number int    `json:"number"`
-	Name   string `json:"name"`
+	Number    int           `json:"number" headerLabel:"ID"`
+	Category  string        `json:"category" headerLabel:"Category" headerMultipleNum:"5"`
+	Name      string        `json:"name" headerLabel:"Title"`
+	CreatedBy PostCreatedBy `json:"created_by" headerLabel:"CreatedBy"`
+	CreatedAt time.Time     `json:"created_at" headerLabel:"CreatedAt"`
+	UpdatedBy PostUpdatedBy `json:"updated_by" headerLabel:"LastUpdatedBy"`
+	UpdatedAt time.Time     `json:"updated_at" headerLabel:"LastUpdatedAt"`
+	Wip       bool          `json:"wip" headerLabel:"WIP"`
 	// FullName       string        `json:"full_name"`
-	Wip bool `json:"wip"`
 	// BodyMd         string        `json:"body_md"`
 	// BodyHtml       string        `json:"body_html"`
-	CreatedAt time.Time `json:"created_at"`
 	// Message        string        `json:"message"`
 	// Url            string        `json:"url"`
-	UpdatedAt time.Time `json:"updated_at"`
 	// Tags           []string      `json:"tags"`
-	Category string `json:"category"`
 	// RevisionNumber int           `json:"revision_number"`
-	CreatedBy PostCreatedBy `json:"created_by"`
-	UpdatedBy PostUpdatedBy `json:"updated_by"`
-
-	// ***** self defined *****
-	IsActiveUserCreated bool `json:"-"`
 }
 
 type PostCreatedBy struct {
-	// Myself     bool   `json:"myself"`
 	Name string `json:"name"`
+	// Myself     bool   `json:"myself"`
 	// ScreenName string `json:"screen_name"`
 	// Icon       string `json:"icon"`
 }
@@ -65,12 +61,12 @@ type ResponsePosts struct {
 	// MaxPerPage int    `json:"max_per_page"`
 }
 
-func NewPostsFetcher(qp *APIQueryParams) *PostsFetcher {
+func NewPostsAPIFetcher(qp *APIQueryParams) *PostsAPIFetcher {
 	newTrue := true
-	return &PostsFetcher{qp: qp, loopFlag: &newTrue}
+	return &PostsAPIFetcher{qp: qp, loopFlag: &newTrue}
 }
 
-func (f *PostsFetcher) Do() []*ResponsePosts {
+func (f *PostsAPIFetcher) Do() []*ResponsePosts {
 	results := make([]*ResponsePosts, 0)
 
 	for *f.loopFlag {
@@ -89,8 +85,8 @@ func (f *PostsFetcher) Do() []*ResponsePosts {
 	return results
 }
 
-func (f *PostsFetcher) do() (*ResponsePosts, error) {
-	ep := buildAPIEndpoint(postEndpointFmt, f.qp, f.qp.SortPosts)
+func (f *PostsAPIFetcher) do() (*ResponsePosts, error) {
+	ep := buildAPIEndpoint(postsAPIEndpointFmt, f.qp, f.qp.SortPosts)
 
 	res, err := http.Get(ep)
 	if err != nil {

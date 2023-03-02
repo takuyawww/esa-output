@@ -2,39 +2,41 @@ package csv
 
 import (
 	"os"
+	"reflect"
+	"strconv"
 
-	"github.com/takuyawww/esa-csv/src/external"
+	"github.com/takuyawww/esa-output/src/external"
 )
 
 const (
-	outPutFileName = "esa-csv.csv"
+	outPutFileName = "esa.csv"
+
+	separator = ","
+	newLine   = "\n"
 )
 
-type EsaCsv struct {
-	Members []*external.ResponseMembers
-	Posts   []*external.ResponsePosts
-	csvStr  string
+type Csv struct {
+	Members   []*external.ResponseMembers
+	Posts     []*external.ResponsePosts
+	outputStr string
 }
 
-func NewEsaCsv(
+func New(
 	members []*external.ResponseMembers,
 	posts []*external.ResponsePosts,
-) *EsaCsv {
-	return &EsaCsv{
+) *Csv {
+	return &Csv{
 		Members: members,
 		Posts:   posts,
 	}
 }
 
-func (ec *EsaCsv) ToCsvString() *EsaCsv {
-	ec.markIsActiveUserCreatedPost()
-
-	ec.csvStr = ec.toHeaderCsvString() + "\n" + ec.toBodyCsvString()
-
+func (ec *Csv) String() *Csv {
+	ec.outputStr = ec.HeaderString() + newLine + ec.bodyString()
 	return ec
 }
 
-func (ec *EsaCsv) OutputCsv() {
+func (ec *Csv) Output() {
 	f, err := os.Create(outPutFileName)
 	if err != nil {
 		panic(err)
@@ -47,22 +49,41 @@ func (ec *EsaCsv) OutputCsv() {
 		}
 	}()
 
-	_, err = f.Write([]byte(ec.csvStr))
+	_, err = f.Write([]byte(ec.outputStr))
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (ec *EsaCsv) markIsActiveUserCreatedPost() {
+func (ec *Csv) HeaderString() string {
+	p := external.Post{}
+	rp := reflect.ValueOf(p)
+	rpt := rp.Type()
 
+	var str string
+
+	for i := 0; i < rpt.NumField(); i++ {
+		str += reflect.TypeOf(p).Field(i).Tag.Get("headerLabel")
+
+		if num := reflect.TypeOf(p).Field(i).Tag.Get("headerMultipleNum"); num != "" {
+			n, err := strconv.Atoi(num)
+			if err != nil {
+				panic(err)
+			}
+
+			for j := 1; j < n+1; j++ {
+				str += reflect.TypeOf(p).Field(i).Tag.Get("headerLabel") + strconv.Itoa(j) + separator
+			}
+			// cutting last separator
+			str = str[:len(str)-1]
+		}
+		str += separator
+	}
+	// cutting last separator
+	return str[:len(str)-1]
 }
 
-func (ec *EsaCsv) toHeaderCsvString() string {
-	var headerStr string
-	return headerStr
-}
-
-func (ec *EsaCsv) toBodyCsvString() string {
+func (ec *Csv) bodyString() string {
 	var bodyStr string
 	return bodyStr
 }
