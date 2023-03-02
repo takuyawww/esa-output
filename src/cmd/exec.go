@@ -8,16 +8,11 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/takuyawww/esa-output/src/external"
-	"github.com/takuyawww/esa-output/src/format/csv"
+	"github.com/takuyawww/esa-output/src/output/csv"
 )
 
 func Exec() {
 	printInformation()
-
-	testStr := csv.New([]*external.ResponseMembers{}, []*external.ResponsePosts{}).String()
-
-	fmt.Println(testStr)
-	panic("test")
 
 	defer func() {
 		if x := recover(); x != nil {
@@ -32,7 +27,9 @@ func Exec() {
 	esaPosts := external.NewPostsAPIFetcher(qp).Do()
 	esaMembers := external.NewMembersAPIFetcher(qp).Do()
 
-	csv.New(esaMembers, esaPosts).String().Output()
+	csv := csv.New(esaMembers, esaPosts)
+	csvStr := csv.String()
+	csv.Output(csvStr)
 }
 
 func printInformation() {

@@ -2,8 +2,10 @@ package external
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -20,14 +22,15 @@ type PostsAPIFetcher struct {
 }
 
 type Post struct {
-	Number    int           `json:"number" headerLabel:"ID"`
-	Category  string        `json:"category" headerLabel:"Category" headerMultipleNum:"5"`
-	Name      string        `json:"name" headerLabel:"Title"`
-	CreatedBy PostCreatedBy `json:"created_by" headerLabel:"CreatedBy"`
-	CreatedAt time.Time     `json:"created_at" headerLabel:"CreatedAt"`
-	UpdatedBy PostUpdatedBy `json:"updated_by" headerLabel:"LastUpdatedBy"`
-	UpdatedAt time.Time     `json:"updated_at" headerLabel:"LastUpdatedAt"`
-	Wip       bool          `json:"wip" headerLabel:"WIP"`
+	Number              int           `json:"number" headerLabel:"ID"`
+	Name                string        `json:"name" headerLabel:"Title"`
+	Category            string        `json:"category" headerLabel:"Category" headerMultipleNum:"5"`
+	CreatedBy           PostCreatedBy `json:"created_by" headerLabel:"CreatedBy"`
+	IsActiveUserCreated bool          `json:"-" headerLabel:"IsActiveUserCreated"`
+	CreatedAt           time.Time     `json:"created_at" headerLabel:"CreatedAt"`
+	UpdatedBy           PostUpdatedBy `json:"updated_by" headerLabel:"LastUpdatedBy"`
+	UpdatedAt           time.Time     `json:"updated_at" headerLabel:"LastUpdatedAt"`
+	Wip                 bool          `json:"wip" headerLabel:"WIP"`
 	// FullName       string        `json:"full_name"`
 	// BodyMd         string        `json:"body_md"`
 	// BodyHtml       string        `json:"body_html"`
@@ -66,8 +69,8 @@ func NewPostsAPIFetcher(qp *APIQueryParams) *PostsAPIFetcher {
 	return &PostsAPIFetcher{qp: qp, loopFlag: &newTrue}
 }
 
-func (f *PostsAPIFetcher) Do() []*ResponsePosts {
-	results := make([]*ResponsePosts, 0)
+func (f *PostsAPIFetcher) Do() []Post {
+	results := make([]Post, 0)
 
 	for *f.loopFlag {
 		result, err := f.do()
@@ -75,7 +78,8 @@ func (f *PostsAPIFetcher) Do() []*ResponsePosts {
 			panic(err)
 		}
 
-		results = append(results, result)
+		results = append(results, result.Posts...)
+
 		if result.NextPage == 0 {
 			*f.loopFlag = false
 		}
@@ -106,4 +110,29 @@ func (f *PostsAPIFetcher) do() (*ResponsePosts, error) {
 	}
 
 	return result, nil
+}
+
+func (p Post) ReflectValueToString(fieldName string) string {
+	switch fieldName {
+	case "Number":
+		return strconv.Itoa(p.Number)
+	case "Name":
+		return p.Name
+	case "Category":
+		return p.Category
+	case "CreatedBy":
+		return p.CreatedBy.Name
+	case "CreatedAt":
+		return p.CreatedAt.Format("2006/01/02")
+	case "IsActiveUserCreated":
+		return fmt.Sprintf("%t", p.IsActiveUserCreated)
+	case "UpdatedBy":
+		return p.UpdatedBy.Name
+	case "UpdatedAt":
+		return p.UpdatedAt.Format("2006/01/02")
+	case "Wip":
+		return fmt.Sprintf("%t", p.Wip)
+	default:
+		return ""
+	}
 }

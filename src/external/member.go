@@ -19,17 +19,14 @@ type MembersAPIFetcher struct {
 }
 
 type Member struct {
-	// Myself 				bool   `json:"myself"`
 	Name string `json:"name"`
+	// Myself 				bool   `json:"myself"`
 	// ScreenName 		string `json:"screen_name"`
 	// Icon 					string `json:"icon"`
 	// Role 					string `json:"role"`
 	// PostsCount 		int    `json:"posts_count"`
 	// JoinedAt 			time.Time `json:"joined_at"`
 	// LastAccessedAt time.Time `json:"last_accessed_at"`
-
-	// ***** self defined *****
-	Active bool `json:"-"`
 }
 
 type ResponseMembers struct {
@@ -47,8 +44,8 @@ func NewMembersAPIFetcher(qp *APIQueryParams) *MembersAPIFetcher {
 	return &MembersAPIFetcher{qp: qp, loopFlag: &newTrue}
 }
 
-func (f *MembersAPIFetcher) Do() []*ResponseMembers {
-	results := make([]*ResponseMembers, 0)
+func (f *MembersAPIFetcher) Do() []Member {
+	results := make([]Member, 0)
 
 	for *f.loopFlag {
 		result, err := f.do()
@@ -56,7 +53,8 @@ func (f *MembersAPIFetcher) Do() []*ResponseMembers {
 			panic(err)
 		}
 
-		results = append(results, result)
+		results = append(results, result.Members...)
+
 		if result.NextPage == 0 {
 			*f.loopFlag = false
 		}
