@@ -30,11 +30,11 @@ type Member struct {
 }
 
 type ResponseMembers struct {
-	Members []Member `json:"members"`
+	Members  []Member `json:"members"`
+	NextPage int      `json:"next_page"`
+	Page     int      `json:"page"`
 	// PrevPage   int    `json:"prev_page"`
-	NextPage int `json:"next_page"`
 	// TotalCount int    `json:"total_count"`
-	Page int `json:"page"`
 	// PerPage    int    `json:"per_page"`
 	// MaxPerPage int    `json:"max_per_page"`
 }

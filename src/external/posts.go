@@ -25,6 +25,7 @@ type PostsAPIFetcher struct {
 type Post struct {
 	Number              int           `json:"number" headerLabel:"ID"`
 	Name                string        `json:"name" headerLabel:"Title"`
+	FullName            string        `json:"full_name" headerLabel:"FullName"`
 	Category            string        `json:"category" headerLabel:"Category" headerMultipleNum:"5"`
 	CreatedBy           PostCreatedBy `json:"created_by" headerLabel:"CreatedBy"`
 	IsActiveUserCreated bool          `json:"-" headerLabel:"IsActiveUserCreated"`
@@ -32,7 +33,6 @@ type Post struct {
 	UpdatedBy           PostUpdatedBy `json:"updated_by" headerLabel:"LastUpdatedBy"`
 	UpdatedAt           time.Time     `json:"updated_at" headerLabel:"LastUpdatedAt"`
 	Wip                 bool          `json:"wip" headerLabel:"WIP"`
-	// FullName       string        `json:"full_name"`
 	// BodyMd         string        `json:"body_md"`
 	// BodyHtml       string        `json:"body_html"`
 	// Message        string        `json:"message"`
@@ -119,20 +119,20 @@ func (p Post) ReflectValueToString(fieldName string, members []Member) string {
 		return strconv.Itoa(p.Number)
 	case "Name":
 		return p.Name
+	case "FullName":
+		return p.FullName
 	case "CreatedBy":
 		return p.CreatedBy.Name
 	case "CreatedAt":
 		return p.CreatedAt.Format("2006/01/02")
 	case "IsActiveUserCreated":
-		var isActiveUserCreated bool
-
+		isActiveUserCreated := false
 		for _, m := range members {
 			if m.Name == p.CreatedBy.Name {
 				isActiveUserCreated = true
 				break
 			}
 		}
-
 		return fmt.Sprintf("%t", isActiveUserCreated)
 	case "UpdatedBy":
 		return p.UpdatedBy.Name

@@ -98,5 +98,6 @@ func TestCsvToString(t *testing.T) {
 	t.Run("test csv to string", func(t *testing.T) {
 		csv := csv.New(mockMembers, mockPosts)
 		fmt.Println(csv.String())
+		// WIP
 	})
 }
