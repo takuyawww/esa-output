@@ -16,5 +16,6 @@ Flags:
   --sort-members="number"      sort by members default joined (sort by posts_count, joined, last_accessed)
   --order="asc"                order by default asc (order by desc or asc)
 
+# output esa.csv at current directory
 $ ./esa-output --team=your-team-name --access-token=your-access-token
 ```
