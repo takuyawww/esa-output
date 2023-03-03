@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -48,18 +49,18 @@ type PostCreatedBy struct {
 }
 
 type PostUpdatedBy struct {
-	// Myself     bool   `json:"myself"`
 	Name string `json:"name"`
+	// Myself     bool   `json:"myself"`
 	// ScreenName string `json:"screen_name"`
 	// Icon       string `json:"icon"`
 }
 
 type ResponsePosts struct {
-	Posts []Post `json:"posts"`
+	Posts    []Post `json:"posts"`
+	NextPage int    `json:"next_page"`
+	Page     int    `json:"page"`
 	// PrevPage   int    `json:"prev_page"`
-	NextPage int `json:"next_page"`
 	// TotalCount int    `json:"total_count"`
-	Page int `json:"page"`
 	// PerPage    int    `json:"per_page"`
 	// MaxPerPage int    `json:"max_per_page"`
 }
@@ -112,26 +113,46 @@ func (f *PostsAPIFetcher) do() (*ResponsePosts, error) {
 	return result, nil
 }
 
-func (p Post) ReflectValueToString(fieldName string) string {
+func (p Post) ReflectValueToString(fieldName string, members []Member) string {
 	switch fieldName {
 	case "Number":
 		return strconv.Itoa(p.Number)
 	case "Name":
 		return p.Name
-	case "Category":
-		return p.Category
 	case "CreatedBy":
 		return p.CreatedBy.Name
 	case "CreatedAt":
 		return p.CreatedAt.Format("2006/01/02")
 	case "IsActiveUserCreated":
-		return fmt.Sprintf("%t", p.IsActiveUserCreated)
+		var isActiveUserCreated bool
+
+		for _, m := range members {
+			if m.Name == p.CreatedBy.Name {
+				isActiveUserCreated = true
+				break
+			}
+		}
+
+		return fmt.Sprintf("%t", isActiveUserCreated)
 	case "UpdatedBy":
 		return p.UpdatedBy.Name
 	case "UpdatedAt":
 		return p.UpdatedAt.Format("2006/01/02")
 	case "Wip":
 		return fmt.Sprintf("%t", p.Wip)
+	default:
+		return ""
+	}
+}
+
+func (p Post) ReflectValueMultipleToString(fieldName string, index int) string {
+	switch fieldName {
+	case "Category":
+		split := strings.Split(p.Category, "/")
+		if len(split) > index {
+			return split[index]
+		}
+		return ""
 	default:
 		return ""
 	}

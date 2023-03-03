@@ -91,9 +91,25 @@ func (ec *Csv) bodyString() string {
 		pt := pv.Type()
 
 		for i := 0; i < pt.NumField(); i++ {
+			num := reflect.TypeOf(post).Field(i).Tag.Get("headerMultipleNum")
 			field := pt.Field(i)
-			value := post.ReflectValueToString(field.Name)
-			str += value + separator
+
+			if num == "" {
+				value := post.ReflectValueToString(field.Name, ec.Members)
+				str += value + separator
+			} else {
+				n, err := strconv.Atoi(num)
+				if err != nil {
+					panic(err)
+				}
+
+				for j := 0; j < n+1; j++ {
+					value := post.ReflectValueMultipleToString(field.Name, j)
+					str += value + separator
+				}
+				// cutting last separator
+				str = str[:len(str)-1]
+			}
 		}
 
 		str += newLine
@@ -101,7 +117,3 @@ func (ec *Csv) bodyString() string {
 
 	return str[:len(str)-1]
 }
-
-// TODO
-// カテゴリーを/区切りで埋めていく
-// 削除済みユーザーかどうかを捜査する
